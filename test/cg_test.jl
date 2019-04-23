@@ -8,9 +8,9 @@ function test_cg()
     A = tA'*tA
     b = rand(100)
     true_x = A\b
-    x, exit_code, num_iters = ConjGrad.cg((x,y) -> mul!(x, A, y) , b)
+    x, exit_code, num_iters = ConjGrad.cg((x,y) -> mul!(x, A, y) , b, tol=1e-16)
 
-    if norm(true_x - x) < 1e-6
+    if norm(true_x - x) < 1e-16
         return true
     else
         return false
