@@ -1,11 +1,13 @@
 module ConjGrad
 
+    using LinearAlgebra
 
-using LinearAlgebra
+    export CGData
+#    export cg
+#    export cg!
 
-include("linearalgebra.jl")
-include("cg.jl")
+    include("linearalgebra.jl")
+    include("cg.jl")
 
-export CGData, cg!, cg
 
 end  # module ConjGrad
