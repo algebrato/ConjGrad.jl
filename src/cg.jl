@@ -17,7 +17,8 @@ function cg!(A, b::Array, x::Array;
         x .= 0
         return 1, 0
     end
-    A(data.r, x)
+    A(data.r, x) # il punto e` che ritorna r, r = Ax cioe` b?
+    println(b .- data.r)
 
     # r = r * -1
     genblas_scal!(-one(Float64), data.r)
@@ -29,7 +30,7 @@ function cg!(A, b::Array, x::Array;
         return 2, 0
     end
     precon(data.z, data.r)
-    data.p .= data.z
+    data.p .= data.z # ok
 
 
     for iter = 1:maxIter
