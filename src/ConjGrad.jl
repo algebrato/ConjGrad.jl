@@ -9,5 +9,4 @@ module ConjGrad
     include("linearalgebra.jl")
     include("cg.jl")
 
-
 end  # module ConjGrad

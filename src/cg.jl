@@ -7,37 +7,28 @@ struct CGData{T<:Real}
                                             zeros(T, n), zeros(T, n))
 end
 
-function cg!(A, b::Array, x::Array;
-             tol::Float64=1e-6, maxIter::Int64=100,
+function cg!(A, b::Array; tol::Float64=1e-6, maxIter::Int64=100,
              precon=copy!, data=CGData{Float64}(length(b)))
 
     n = length(b)
     n_iter = 0
-    if genblas_nrm2(b) == 0.0
-        x .= 0
-        return 1, 0
-    end
-    A(data.r, x) # il punto e` che ritorna r, r = Ax cioe` b?
-    println(b .- data.r)
 
-    # r = r * -1
+    x = zeros(n)
+    data.r .= b
+    precon(data.z, data.r)
+    data.p .= data.z # ok
+
     genblas_scal!(-one(Float64), data.r)
-
-    # -r = b
     genblas_axpy!(one(Float64), b, data.r)
+
     residual_0 = genblas_nrm2(data.r)
     if residual_0 <= tol
         return 2, 0
     end
-    precon(data.z, data.r)
-    data.p .= data.z # ok
-
 
     for iter = 1:maxIter
-        A(data.Ap, data.p)
-        #gamma = r * z
+        data.Ap .= A(data.p)
         gamma = genblas_dot(data.r, data.z)
-        # alpha = gamma / (p.T * Ap)
         alpha = gamma/genblas_dot(data.p, data.Ap)
         if alpha == Inf || alpha < 0
             return -13, iter
@@ -61,8 +52,7 @@ function cg(A, b::Array;
             tol::Float64=1e-6, maxIter::Int64=100,
             precon=copy!, data=CGData{Float64}(length(b)))
     x = zeros(length(b))
-    exit_code, num_iters = cg!(A, b, x,
-                               tol=tol, maxIter=maxIter,
+    exit_code, num_iters = cg!(A, b, tol=tol, maxIter=maxIter,
                                precon=precon, data=data)
     return x, exit_code, num_iters
 end
