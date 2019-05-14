@@ -21,7 +21,7 @@ function cg!(A, b::Array; tol::Float64=1e-6, maxIter::Int64=100,
     genblas_scal!(-one(Float64), data.r)
     genblas_axpy!(one(Float64), b, data.r)
 
-    # residual_0 = genblas_nrm2(data.r)
+    residual_0 = genblas_nrm2(data.r)
     # if residual_0 <= tol
     #     return 2, 0
     # end
