@@ -1,5 +1,4 @@
-include("../src/ConjGrad.jl")
-#using ConjGrad
+using ConjGrad
 using LinearAlgebra, SparseArrays
 using Test
 using Random
@@ -62,6 +61,4 @@ function A(x)
   return reshape(res, N*N, 1)[:, 1]
 end
 
-x=zeros(length(b))
-data = ConjGrad.CGData{Float64}(length(b))
-x, exit_code, num_iters=ConjGrad.cg(A, b, tol=1e-3, precon=A)
+x, exit_code, num_iters=ConjGrad.cg(A, b, tol=1e-3)

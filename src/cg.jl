@@ -24,7 +24,7 @@ function cg!(A, b::Array, x::Array; tol::Float64=1e-6,
     genblas_axpy!(1.0, b, data.r)
     residual_0 = genblas_nrm2(data.r)
 
-    println(residual_0) # per ora si spacca qua!
+    println(residual_0)
 
     if residual_0 <= tol
         return 2, 0
