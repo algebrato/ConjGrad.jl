@@ -1,6 +1,12 @@
-genblas_dot(x, y) = dot(x,y)
-genblas_scal!(a, x) = x .*= a
-genblas_axpy!(a, x, y) = y .+= a.*x
-genblas_nrm2(x) = norm(x)
 
-# I ought add the BLAS wrapper. 
+genblas_dot(x::T, y::T) where {T <: LinearAlgebra.BlasFloat} = BLAS.dot(x,y)
+genblas_dot(x, y) = dot(x,y)
+
+genblas_scal!(a::T, x::Vector{T}) where {T <: LinearAlgebra.BlasFloat} = BLAS.scal!(length(x), a, x, 1)
+genblas_scal!(a, x) = x .*= a
+
+genblas_axpy!(a::T, x::Vector{T}, y::Vector{T}) where {T <: LinearAlgebra.BlasFloat} = BLAS.axpy!(a, x, y)
+genblas_axpy!(a, x, y) = y .+= a.*x
+
+genblas_nrm2(x::Vector{T}) where {T <: LinearAlgebra.BlasFloat} = BLAS.nrm2(length(x), x, 1)
+genblas_nrm2(x) = norm(x)

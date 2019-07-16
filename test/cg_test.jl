@@ -1,64 +1,25 @@
-using ConjGrad
 using LinearAlgebra, SparseArrays
+using ConjGrad
 using Test
-using Random
-using FFTW
 
+function test_cg()
+    tA = sprandn(100,100,.1) .+ 10.0*sparse(1.0I, 100, 100)
+    A = tA'*tA
+    b = rand(100)
+    true_x = A\b
+    x, exit_code, num_iters = cg((x)->(A * x) , b,
+                                 tol=1e-16,
+                                 maxIter=1000,
+                                 precon=copy!,
+                                 verbose=false
+                                 )
 
-using JLD
-@load("../strip2/ciao")
-
-N = 1024
-
-function binned_map(N_pix::Int, tod::Array{Float64, 1},
-                    points::Array{Int64, 2})
-    map = zeros(N_pix, N_pix)
-    hit = zeros(N_pix, N_pix)
-
-    for i = 1:length(tod)
-        map[points[i, 1], points[i, 2]] += tod[i]
-        hit[points[i, 1], points[i, 2]] += 1.0
+    if norm(true_x - x) < 1e-16
+        return true
+    else
+        return false
     end
 
-    return map, hit
-
 end
 
-
-function get_tod(sky::Array{Float64, 2}, points::Array{Int64, 2})
-
-    Num_of_pixels = size(points)[1]
-    tod = [sky[points[i,1], points[i,2]] for i = 1:Num_of_pixels]
-
-    return tod
-
-end
-
-# inserire il denoise
-function denoise(tod::Array{Float64, 1}, noise_s::Array{Float64, 1})
-  ftod = fft(tod)
-  ftod ./= noise_s
-  tod = real.(ifft(ftod))
-  return tod
-end
-
-b = zeros(N*N)
-for i in dataset_baselines
-  tod = denoise(i.time_order_data, i.noise)
-  a, h = binned_map(N, tod, i.pointing)
-  b .+= reshape(a, N*N, 1)[:, 1]
-end
-
-
-function A(x)
-  res = zeros(N, N)
-  for i in dataset_baselines
-    tod = get_tod(reshape(x, N, N), i.pointing)
-    tod = denoise(tod, i.noise)
-    mat, hmat = binned_map(N, tod, i.pointing)
-    res .+= mat
-  end
-  return reshape(res, N*N, 1)[:, 1]
-end
-
-x, exit_code, num_iters=ConjGrad.cg(A, b, tol=1e-3)
+@test test_cg()

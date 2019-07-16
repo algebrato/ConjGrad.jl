@@ -1,4 +1,17 @@
-struct CGData{T<:Real}
+@doc raw"""
+    `struct CGData{ T :< Real }`
+
+This structure represent the data container for the ConjGrad module, and
+contain the preallocated vectors necessary for the functions.
+If nothing is provided, these vectors will bel allocated at each call
+
+In the follow instance is shown the container creation
+    `cgdata = CGData(n, T)`
+where `n` is the problem dimension and `T` represent the data type that are
+used in the problem.
+"""
+
+struct CGData{ T <: Real }
     r::Array{T}
     z::Array{T}
     p::Array{T}
@@ -7,8 +20,28 @@ struct CGData{T<:Real}
                                             zeros(T, n), zeros(T, n))
 end
 
-function cg!(A, b::Array, x::Array; tol::Float64=1e-6,
-             maxIter::Int64=10, precon=copy!, data=CGData{Float64}(length(b)))
+@doc raw"""
+    `function cg!(A, b::Array, x::Array; tol::Float64=1e-6,
+                 maxIter::Int64=1000, precon=copy!,
+                 data=CGData{Float64}(length(b)),
+                 verbose=false)`
+
+This is the typical conjugate gradient algorithm in order to solve problems
+like A x = b. Some hints about it are mandatory: The matrix `A` and the
+preconditioner `precon` have to be expressed as functions. A scholar exsample
+is given by the matrix product. If you know the complete representation of the
+matrix `A` and if you use `SparseMatrixCSC` you may write its representation
+using an enclosure function:
+
+    `cg!((x)->(A * b), b)`
+
+The same for the `precon` representation.
+"""
+function cg!(A, b::Array, x::Array;
+             tol::Float64=1e-6,
+             maxIter::Int64=1000, precon=copy!,
+             data=CGData{Float64}(length(b)),
+             verbose=false)
 
     n = length(b)
     n_iter = 0
@@ -24,8 +57,6 @@ function cg!(A, b::Array, x::Array; tol::Float64=1e-6,
     genblas_axpy!(1.0, b, data.r)
     residual_0 = genblas_nrm2(data.r)
 
-    println(residual_0)
-
     if residual_0 <= tol
         return 2, 0
     end
@@ -37,6 +68,7 @@ function cg!(A, b::Array, x::Array; tol::Float64=1e-6,
         data.Ap .= A(data.p)
         gamma = genblas_dot(data.r, data.z)
         alpha = gamma/genblas_dot(data.p, data.Ap)
+
         if alpha == Inf || alpha < 0
             return -13, iter
         end
@@ -44,7 +76,10 @@ function cg!(A, b::Array, x::Array; tol::Float64=1e-6,
         genblas_axpy!(alpha, data.p, x)
         genblas_axpy!(-alpha, data.Ap, data.r)
         residual = genblas_nrm2(data.r)/residual_0
-        println(residual)
+
+        if verbose
+            println(residual)
+        end
 
         if residual <= tol
             return 30, iter
@@ -58,9 +93,16 @@ function cg!(A, b::Array, x::Array; tol::Float64=1e-6,
     return -2, maxIter
 end
 
-function cg(A, b::Array;
-            tol::Float64=1e-6, maxIter::Int64=10,
-            precon=copy!, data=CGData{Float64}(length(b)))
+
+@doc raw"""
+    `function cg(A, b::Array; tol::Float64=1e-6, maxIter::Int64=1000,
+                precon=copy!, data=CGData{Float64}(length(b)), verbose=false)`
+
+A nice interface for `cg!()` function. For the whole algorithm description
+you may see the `cg!()` description.  
+"""
+function cg(A, b::Array; tol::Float64=1e-6, maxIter::Int64=1000,
+            precon=copy!, data=CGData{Float64}(length(b)), verbose=false)
     x = zeros(length(b))
     exit_code, num_iters = cg!(A, b, x, tol=tol, maxIter=maxIter,
                                precon=precon, data=data)
