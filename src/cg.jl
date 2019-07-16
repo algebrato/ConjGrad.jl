@@ -99,12 +99,12 @@ end
                 precon=copy!, data=CGData{Float64}(length(b)), verbose=false)`
 
 A nice interface for `cg!()` function. For the whole algorithm description
-you may see the `cg!()` description.  
+you may see the `cg!()` description.
 """
 function cg(A, b::Array; tol::Float64=1e-6, maxIter::Int64=1000,
             precon=copy!, data=CGData{Float64}(length(b)), verbose=false)
     x = zeros(length(b))
     exit_code, num_iters = cg!(A, b, x, tol=tol, maxIter=maxIter,
-                               precon=precon, data=data)
+                               precon=precon, data=data, verbose=verbose)
     return x, exit_code, num_iters
 end
