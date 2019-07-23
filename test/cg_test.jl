@@ -7,11 +7,13 @@ function test_cg()
     A = tA'*tA
     b = rand(100)
     true_x = A\b
+    comm = missing
     x, exit_code, num_iters = cg((x)->(A * x) , b,
                                  tol=1e-16,
                                  maxIter=1000,
                                  precon=copy!,
-                                 verbose=false
+                                 verbose=false,
+                                 comm=comm
                                  )
 
     if norm(true_x - x) < 1e-16

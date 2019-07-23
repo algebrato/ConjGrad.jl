@@ -1,6 +1,7 @@
 module ConjGrad
 
     using LinearAlgebra
+    using MPI
 
     export CGData
     export cg
