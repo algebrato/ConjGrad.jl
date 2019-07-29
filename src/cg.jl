@@ -35,7 +35,15 @@ using an enclosure function:
 
     `cg!((x)->(A * b), b)`
 
-The same for the `precon` representation.
+The same for the `precon` representation. If you don't know the complete
+representation of the A matrix, you may define a effective function that's
+works guess matrix A. The last case is often used for large-scale problems
+where A matrix the complete representation is too big.
+
+The algorithm was written using this reference:
+["Fondamenti di Calcolo Numerico - Giovanni Monegato", pag. 77-81]
+
+
 """
 function cg!(A, b::Array, x::Array;
              tol::Float64=1e-6,
@@ -54,17 +62,17 @@ function cg!(A, b::Array, x::Array;
     x .= A(data.r)
 
     genblas_scal!(-1.0, data.r)
+    # r_0 = b
     genblas_axpy!(1.0, b, data.r)
-    #residual_0 = genblas_nrm2(data.r)
     residual_0 = sqrt(genblas_dot(data.r, data.r, comm))
 
     if residual_0 <= tol
         return 2, 0
     end
 
+    # M z_0 = r
     precon(data.z, data.r)
     @. data.p = data.z
-    @. data.p = data.r
 
     for iter = 1:maxIter
         data.Ap .= A(data.p)
@@ -91,7 +99,6 @@ function cg!(A, b::Array, x::Array;
         beta = genblas_dot(data.z, data.r, comm)/gamma
 
         genblas_scal!(beta, data.p)
-        #genblas_axpy!(1.0, data.r, data.p)
         genblas_axpy!(1.0, data.z, data.p)
     end
     return -2, maxIter

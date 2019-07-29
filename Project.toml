@@ -1,7 +1,7 @@
 name = "ConjGrad"
-uuid = ""
+uuid = "c16e2fb6-b1e3-11e9-21be-0f591a3b69ea"
 authors = ["Stefano Mandeli <stefano.mandelli@unimi.it>"]
-version = "0.0.0"
+version = "0.1.0"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
